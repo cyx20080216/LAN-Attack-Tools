@@ -1,4 +1,5 @@
 from scapy.all import *
+import netifaces
 import sys
 
 
@@ -14,30 +15,46 @@ def getOptions():
 	return options
 
 def printHelp():
-	print("python findhosts.py <-f Filename> <-s Segment> [-t Waiting time] [-i Iface]\r\n\n",end="")
-	print("\t-f\tA Filename you want to save.\r\n",end="")
-	print("\t-s\tYou want to find the segment of the host.\r\n",end="")
+	print("python findhosts.py [-t Waiting time] [-i Interface]\r\n",end="")
 	print("\t-t\tHow long you want to wait for the response.\r\n",end="")
+
+def IPToInt(IP):
+    nums=IP.split(".")
+    return int(nums[0])<<24|\
+            int(nums[1])<<16|\
+            int(nums[2])<<8|\
+            int(nums[3])
+
+def intToIP(num):
+    return "%d.%d.%d.%d"%(num>>24&0xff,num>>16&0xff,num>>8&0xff,num&0xff)
+
+def lowbit(num):
+    return num&(-num)
+
+def getSegment(address,netmask):
+    netmask_num=IPToInt(netmask)
+    first_address=intToIP(IPToInt(address)&netmask_num)
+    bit_num=0
+    while netmask_num!=0:
+        bit_num+=1
+        netmask_num-=lowbit(netmask_num)
+    return "%s/%s"%(first_address,bit_num)
 
 conf.verb=0
 options=getOptions()
-filename=options.get("-f")
-segment=options.get("-s")
-timeout=options.get("-t")
-iface=options.get("-i")
-if filename==None:
-	print("[!] Arg Error.You must fill in the \"-f\" argument.\r\n",end="")
-if segment==None:
-	print("[!] Arg Error.You must fill in the \"-f\" argument.\r\n",end="")
-if timeout==None:
-	timeout="5"
-if iface==None:
-	iface=conf.iface
-if filename==None or segment==None:
+if "--help" in options:
 	printHelp()
 	exit()
+timeout=options.get("-t")
+iface=options.get("-i")
+if timeout==None:
+    timeout="5"
+if iface==None:
+    iface=conf.iface
+address=netifaces.ifaddresses(iface)[netifaces.AF_INET][0]["addr"]
+netmask=netifaces.ifaddresses(iface)[netifaces.AF_INET][0]["netmask"]
+segment=getSegment(address,netmask)
 pkt=Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst=segment,op=1)
 res=srp(pkt,timeout=float(timeout),iface=iface)
-with open(filename,"w") as f:
-	for each in res[0]:
-		f.write("%s\n"%(each[1][ARP].psrc))
+for each in res[0]:
+    print("%s\r\n"%(each[1][ARP].psrc),end="")

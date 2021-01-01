@@ -14,7 +14,7 @@ def getOptions():
 	return options
 
 def printHelp():
-	print("ArpSpoof.py <-t Target|-T TargetsFile> <-f FalseIP|-F FalseIPsFile> [-i iface]\r\n\n",end="")
+	print("python arpspoof.py <-t Target|-T TargetsFile> <-f FalseIP|-F FalseIPsFile> [-i iface]\r\n\n",end="")
 	print("\t-t\tA target you will spoof.\r\n",end="")
 	print("\t-T\tA file of targets.\r\n",end="")
 	print("\t-f\tA false IP.\r\n",end="")

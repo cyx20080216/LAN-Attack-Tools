@@ -14,7 +14,7 @@ def getOptions():
 	return options
 
 def printHelp():
-	print("GetIpInSegment.py <-f Filename> <-s Segment> [-t Waiting time] [-i Iface]\r\n\n",end="")
+	print("python findhosts.py <-f Filename> <-s Segment> [-t Waiting time] [-i Iface]\r\n\n",end="")
 	print("\t-f\tA Filename you want to save.\r\n",end="")
 	print("\t-s\tYou want to find the segment of the host.\r\n",end="")
 	print("\t-t\tHow long you want to wait for the response.\r\n",end="")

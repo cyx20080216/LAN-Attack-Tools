@@ -42,8 +42,6 @@ def has_pkt(pkt):
         if pkt[Ether].dst==get_if_hwaddr(iface) and pkt[IP].dst!=get_if_addr(iface):
             if check(pkt):
                 reSend(pkt)
-#            else:
-#                pkt.show()
 
 conf.verb=0
 options=getOptions()

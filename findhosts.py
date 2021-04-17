@@ -1,22 +1,23 @@
 from scapy.all import *
 import netifaces
 import sys
+import re
 
 
 def getOptions():
-	options=dict()
-	key=None
-	for each in sys.argv[1:]:
-		if key==None:
-				key=each
-		else:
-			options[key]=each
-			key=None
-	return options
+    options=dict()
+    key=None
+    for each in sys.argv[1:]:
+        if key==None:
+            key=each
+        else:
+            options[key]=each
+            key=None
+    return options
 
 def printHelp():
-	print("python findhosts.py [-t Waiting time] [-i Interface]\r\n",end="")
-	print("\t-t\tHow long you want to wait for the response.\r\n",end="")
+    print("python findhosts.py [-t Waiting time] [-i Interface]\r\n",end="")
+    print("\t-t\tHow long you want to wait for the response.\r\n",end="")
 
 def IPToInt(IP):
     nums=IP.split(".")
@@ -43,16 +44,22 @@ def getSegment(address,netmask):
 conf.verb=0
 options=getOptions()
 if "--help" in options:
-	printHelp()
-	exit()
+    printHelp()
+    exit()
 timeout=options.get("-t")
 iface=options.get("-i")
 if timeout==None:
     timeout="5"
 if iface==None:
     iface=conf.iface
-address=netifaces.ifaddresses(iface)[netifaces.AF_INET][0]["addr"]
-netmask=netifaces.ifaddresses(iface)[netifaces.AF_INET][0]["netmask"]
+if type(iface)==str:
+    address=netifaces.ifaddresses(iface)[netifaces.AF_INET][0]["addr"]
+else:
+    address=netifaces.ifaddresses(re.search(r'\{[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}\}',iface.pcap_name).group())[netifaces.AF_INET][0]["addr"]
+if type(iface)==str:
+    netmask=netifaces.ifaddresses(iface)[netifaces.AF_INET][0]["netmask"]
+else:
+    netmask=netifaces.ifaddresses(re.search(r'\{[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}\}',iface.pcap_name).group())[netifaces.AF_INET][0]["netmask"]
 segment=getSegment(address,netmask)
 pkt=Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst=segment,op=1)
 res=srp(pkt,timeout=float(timeout),iface=iface)

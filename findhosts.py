@@ -52,14 +52,11 @@ if timeout==None:
     timeout="5"
 if iface==None:
     iface=conf.iface
-if type(iface)==str:
-    address=netifaces.ifaddresses(iface)[netifaces.AF_INET][0]["addr"]
-else:
-    address=netifaces.ifaddresses(re.search(r'\{[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}\}',iface.pcap_name).group())[netifaces.AF_INET][0]["addr"]
-if type(iface)==str:
-    netmask=netifaces.ifaddresses(iface)[netifaces.AF_INET][0]["netmask"]
-else:
-    netmask=netifaces.ifaddresses(re.search(r'\{[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}\}',iface.pcap_name).group())[netifaces.AF_INET][0]["netmask"]
+address=get_if_addr(iface)
+for each in netifaces.interfaces():
+    if netifaces.AF_INET in netifaces.ifaddresses(each):
+        if netifaces.ifaddresses(each)[netifaces.AF_INET][0]["addr"]==address:
+            netmask=netifaces.ifaddresses(each)[netifaces.AF_INET][0]["netmask"]
 segment=getSegment(address,netmask)
 pkt=Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst=segment,op=1)
 res=srp(pkt,timeout=float(timeout),iface=iface)

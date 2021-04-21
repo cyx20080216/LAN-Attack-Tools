@@ -47,8 +47,7 @@ def getFalseIps(options):
         return falseIps
 
 def getMacByIps(ips):
-    pkt=Ether(src=get_if_hwaddr(iface),dst="ff:ff:ff:ff:ff:ff")/\
-    ARP(psrc=get_if_addr(iface),hwsrc=get_if_hwaddr(iface),pdst=ips,hwdst="ff:ff:ff:ff:ff:ff",op=1)
+    pkt=Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst=ips,op=1)
     res=srp(pkt,iface=iface,timeout=5)
     mac=dict()
     for each in res[0]:
@@ -66,7 +65,7 @@ def arpSpoof(targets_mac,falseIps_mac):
         sendp(pktlist,loop=1)
     except KeyboardInterrupt:
         pass
-    print("[*] Arp spoof finiched.\r\n",end="")
+    print("[*] Arp spoof finshed.\r\n",end="")
 
 def restore(targets_mac,falseIps_mac):
     pktlist=[]
